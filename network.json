@@ -1,0 +1,135 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "defaultValue": "sf-apim-vnet",
+            "type": "string"
+        },
+        "vnetAddressSpace": {
+            "defaultValue": "172.16.0.0/20",
+            "type": "string"
+        },
+        "apimSubnetName": {
+            "defaultValue": "apim-subnet",
+            "type": "string"
+        },
+        "sfSubnetName": {
+            "defaultValue": "sf-subnet",
+            "type": "string"
+        },
+		 "apimSubnetSpace": {
+            "defaultValue": "172.16.0.0/27",
+            "type": "string"
+        },
+        "sfSubnetSpace": {
+            "defaultValue": "172.16.2.0/23",
+            "type": "string"
+        },
+        "apimNetworkSecurityGroupName": {
+            "defaultValue": "apim-vnet-security",
+            "type": "string"
+        },
+        "sfNetworkSecurityGroupName": {
+            "defaultValue": "sf-vnet-security",
+            "type": "string"
+        }
+    },
+    "variables": {
+        "location": "[string(resourceGroup().location)]",
+        "vnetApiVersion": "2017-03-01",
+        "sgApiVersion": "2017-03-01"
+    },
+    "outputs": {
+        "vnet": {
+            "type": "object",
+            "value": "[reference(parameters('vnetName'))]"
+        },
+        "vnetVersion": {
+            "type": "string",
+            "value": "[variables('vnetApiVersion')]"
+        },
+        "vnetName": {
+            "type": "string",
+            "value": "[parameters('vnetName')]"
+        },
+        "sgVersion": {
+            "type": "string",
+            "value": "[variables('sgApiVersion')]"
+        },
+        "sfSubnetName": {
+            "type": "string",
+            "value": "[parameters('sfSubnetName')]"
+        },
+        "apimSubnetName": {
+            "type": "string",
+            "value": "[parameters('apimSubnetName')]"
+        },
+        "sfSgName": {
+            "type": "string",
+            "value": "[parameters('sfNetworkSecurityGroupName')]"
+        },
+        "apimSgName": {
+            "type": "string",
+            "value": "[parameters('apimNetworkSecurityGroupName')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('sfNetworkSecurityGroupName')]",
+            "apiVersion": "[variables('sgApiversion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "resourceType": "Service Fabric"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('apimNetworkSecurityGroupName')]",
+            "apiVersion": "[variables('sgApiversion')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "resourceType": "API Management"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('vnetName')]",
+            "apiVersion": "[variables('vnetApiversion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnetAddressSpace')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('apimSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('apimSubnetSpace')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('apimNetworkSecurityGroupName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('sfSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('sfSubnetSpace')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('sfNetworkSecurityGroupName'))]"
+                            }
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('apimNetworkSecurityGroupName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('sfNetworkSecurityGroupName'))]"
+            ]
+        }
+    ]
+}
