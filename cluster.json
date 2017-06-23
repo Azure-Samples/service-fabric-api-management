@@ -23,62 +23,66 @@
     },
     "vnetName": {
       "defaultValue": "sf-apim-vnet",
-      "type": "string", 
-	  "metadata": {
-		"description": "The name of the VNET that contains the Service Fabric cluster and API Management service deployment."
-} 
+      "type": "string",
+      "metadata": {
+        "description": "The name of the VNET that contains the Service Fabric cluster and API Management service deployment."
+      }
     },
     "vnetVersion": {
       "type": "string",
       "defaultValue": "2017-03-01",
-	  "metadata": {
-		"description": "The version of the VNET resource to which the subnet belongs as defined by the subnetName parameter."
-      } 
+      "metadata": {
+        "description": "The version of the VNET resource to which the subnet belongs as defined by the subnetName parameter."
+      }
     },
-	 "subnetName": {
+    "subnetName": {
       "type": "string",
       "defaultValue": "sf-subnet",
-	  "metadata": {
-		"description": "The name subnet to deploy the Service Fabric cluster to. This subnet must be in the same VNET that contains the API Management service deployment."
-      } 
+      "metadata": {
+        "description": "The name subnet to deploy the Service Fabric cluster to. This subnet must be in the same VNET that contains the API Management service deployment."
+      }
     },
     "networkSecurityGroupName": {
       "type": "string",
       "defaultValue": "sf-vnet-security",
-	  "metadata": {
-		"description": "The name Network Security Group to deploy the Service Fabric cluster to. This NSG must be applied to the subnet in the 'subnetName' parameter."
-      } 
+      "metadata": {
+        "description": "The name Network Security Group to deploy the Service Fabric cluster to. This NSG must be applied to the subnet in the 'subnetName' parameter."
+      }
     },
     "networkSecurityGroupVersion": {
       "type": "string",
       "defaultValue": "2017-03-01",
-	  "metadata": {
-		"description": "The version of the Network Security Group resource."
-      }    
+      "metadata": {
+        "description": "The version of the Network Security Group resource."
+      }
     },
     "vmImagePublisher": {
       "type": "string",
       "defaultValue": "MicrosoftWindowsServer",
       "metadata": {
-      "description": "VM image Publisher"}
+        "description": "VM image Publisher"
+      }
     },
     "vmImageOffer": {
       "type": "string",
       "defaultValue": "WindowsServer",
       "metadata": {
-      "description": "VM image offer"}
+        "description": "VM image offer"
+      }
     },
     "vmImageSku": {
       "type": "string",
       "defaultValue": "2016-Datacenter-with-Containers",
       "metadata": {
-      "description": "VM image SKU"}
+        "description": "VM image SKU"
+      }
     },
     "vmImageVersion": {
       "type": "string",
       "defaultValue": "latest",
       "metadata": {
-      "description": "VM image version"}
+        "description": "VM image version"
+      }
     },
     "loadBalancedAppPort1": {
       "type": "int",
@@ -583,7 +587,7 @@
         "clusterName": "[parameters('clusterName')]"
       }
     },
-	{
+    {
       "apiVersion": "[variables('vmssApiVersion')]",
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "[variables('vmNodeType0Name')]",

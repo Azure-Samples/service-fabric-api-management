@@ -10,7 +10,7 @@
     },
     "adminPassword": {
       "value": ""
-    }, 
+    },
     "certificateThumbprint": {
       "value": ""
     },
@@ -20,10 +20,10 @@
     "certificateUrlvalue": {
       "value": ""
     },
-	"vnetName": {
-	  "value": "sf-apim-vnet"
-	},
-	"subnetName": {
+    "vnetName": {
+      "value": "sf-apim-vnet"
+    },
+    "subnetName": {
       "value": "sf-subnet"
     },
     "networkSecurityGroupName": {

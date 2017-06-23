@@ -1,30 +1,30 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "apimNetworkSecurityGroupName": {
-            "value": "apim-vnet-security"
-        },
-        "sfNetworkSecurityGroupName": {
-            "value": "sf-vnet-security"
-        },
-        "vnetName": {
-            "value": "sf-apim-vnet"
-        },
-        "vnetAddressSpace": {
-            "value": "172.16.0.0/20"
-        },
-        "apimSubnetSpace": {
-            "value": "172.16.0.0/27"
-        },
-        "sfSubnetSpace": {
-            "value": "172.16.2.0/23"
-        },
-        "apimSubnetName": {
-            "value": "apim-subnet"
-        },
-        "sfSubnetName": {
-            "value": "sf-subnet"
-        }
-	}
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apimNetworkSecurityGroupName": {
+      "value": "apim-vnet-security"
+    },
+    "sfNetworkSecurityGroupName": {
+      "value": "sf-vnet-security"
+    },
+    "vnetName": {
+      "value": "sf-apim-vnet"
+    },
+    "vnetAddressSpace": {
+      "value": "172.16.0.0/20"
+    },
+    "apimSubnetSpace": {
+      "value": "172.16.0.0/27"
+    },
+    "sfSubnetSpace": {
+      "value": "172.16.2.0/23"
+    },
+    "apimSubnetName": {
+      "value": "apim-subnet"
+    },
+    "sfSubnetName": {
+      "value": "sf-subnet"
+    }
+  }
 }
