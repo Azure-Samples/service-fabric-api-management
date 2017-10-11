@@ -93,7 +93,7 @@
     },
     "loadBalancedAppPort2": {
       "type": "int",
-      "defaultValue": 8080,
+      "defaultValue": 8081,
       "metadata": {
         "description": "Input endpoint2 for the application to use. Replace it with what your application uses"
       }
