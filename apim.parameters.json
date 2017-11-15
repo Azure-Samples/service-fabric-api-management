@@ -1,24 +1,66 @@
 {
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "apimInstanceName": {
-      "value": ""
-    },
-    "apimPublisherEmail": {
-      "value": ""
-    },
-    "apimSku": {
-      "value": ""
-    },
-    "vnetName": {
-      "value": "sf-apim-vnet"
-    },
-    "subnetName": {
-      "value": "apim-subnet"
-    },
-    "networkSecurityGroupName": {
-      "value": "apim-vnet-security"
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimInstanceName": {
+            "value": ""
+        },
+        "apimPublisherEmail": {
+            "value": ""
+        },
+        "apimSku": {
+            "value": ""
+        },
+        "serviceFabricCertificateName": {
+            "value": ""
+        },
+        "serviceFabricCertificate": {
+            "value": ""
+        },
+        "certificatePassword": {
+            "value": ""
+        },
+        "serviceFabricCertificateThumbprint": {
+            "value": ""
+        },
+        "url_path": {
+            "value": ""
+        },
+        "clusterHttpManagementEndpoint": {
+            "value": ""
+        },
+        "inbound_policy":{
+            "value": ""
+        },
+        "policies_policy_name": {
+            "value": "policy"
+        },
+        "apis_service_fabric_app_name": {
+            "value": "service-fabric-app"
+        },
+        "apim_service_fabric_product_name": {
+            "value": "service-fabric-api-product"
+        },
+        "service_fabric_backend_name": {
+            "value": "servicefabric"
+        },
+        "apis_service_fabric_app_name_operation": {
+            "value": "service-fabric-app-operation"
+        },
+        "vnetName": {
+            "value": "sf-apim-vnet"
+        },
+        "subnetName": {
+            "value": "apim-subnet"
+        },
+        "vnetVersion": {
+            "value": "2017-03-01"
+        },
+        "networkSecurityGroupName": {
+            "value": "apim-vnet-security"
+        },
+        "networkSecurityGroupVersion": {
+            "value": "2017-03-01"
+        }
     }
-  }
 }

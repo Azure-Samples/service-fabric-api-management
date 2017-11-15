@@ -1,285 +1,451 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "apimInstanceName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of your API Management service."
-      }
-    },
-    "apimPublisherEmail": {
-      "type": "string",
-      "minLength": 1,
-      "metadata": {
-        "description": "The email address of the owner of the service"
-      }
-    },
-    "apimSku": {
-      "type": "string",
-      "allowedValues": [
-        "Developer",
-        "Premium"
-      ],
-      "defaultValue": "Developer",
-      "metadata": {
-        "description": "The pricing tier of this API Management service. Only Developer and Premium are supported when deploying into a shared VNET."
-      }
-    },
-    "vnetName": {
-      "defaultValue": "sf-apim-vnet",
-      "type": "string",
-      "metadata": {
-        "description": "The name of the VNET that contains the Service Fabric cluster and API Management service deployment."
-      }
-    },
-    "subnetName": {
-      "defaultValue": "apim-subnet",
-      "type": "string",
-      "metadata": {
-        "description": "The name subnet to deploy the API Management service to. This subnet cannot have any other resources in it and must be in the same VNET that contains the Service Fabric cluster back-end."
-      }
-    },
-    "vnetVersion": {
-      "defaultValue": "2017-03-01",
-      "type": "string",
-      "metadata": {
-        "description": "The version of the VNET resource to which the subnet belongs as defined by the subnetName parameter."
-      }
-    },
-    "networkSecurityGroupName": {
-      "defaultValue": "apim-vnet-security",
-      "type": "string",
-      "metadata": {
-        "description": "The name Network Security Group to deploy the API Management service to. This NSG must be applied to the subnet in the 'subnetName' parameter."
-      }
-    },
-    "networkSecurityGroupVersion": {
-      "defaultValue": "2017-03-01",
-      "type": "string",
-      "metadata": {
-        "description": "The version of the Network Security Group resource."
-      }
-    }
-  },
-  "variables": {
-    "location": "[string(resourceGroup().location)]",
-    "apimIP": "[concat(parameters('apimInstanceName'), '-public-ip')]",
-    "apimSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
-  },
-  "resources": [
-    {
-      "type": "Microsoft.ApiManagement/service",
-      "sku": {
-        "name": "[parameters('apimSku')]",
-        "capacity": 1
-      },
-      "name": "[parameters('apimInstanceName')]",
-      "apiVersion": "2016-07-07",
-      "location": "[variables('location')]",
-      "tags": {
-      },
-      "properties": {
-        "publisherEmail": "[parameters('apimPublisherEmail')]",
-        "publisherName": "Microsoft",
-        "provisioningState": "Succeeded",
-        "targetProvisioningState": "",
-        "createdAtUtc": "2017-03-30T21:26:15.2829367Z",
-        "runtimeUrl": "[concat('https://', parameters('apimInstanceName'),'.azure-api.net')]",
-        "portalUrl": "[concat('https://', parameters('apimInstanceName'),'.portal.azure-api.net')]",
-        "managementApiUrl": "[concat('https://', parameters('apimInstanceName'),'.management.azure-api.net')]",
-        "scmUrl": "[concat('https://', parameters('apimInstanceName'),'.scm.azure-api.net')]",
-        "addresserEmail": null,
-        "hostnameConfigurations": [],
-        "additionalLocations": null,
-        "vpnconfiguration": {
-          "subnetResourceId": "[variables('apimSubnetId')]",
-          "location": "[variables('location')]"
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimInstanceName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of your API Management service."
+            }
         },
-        "customProperties": {
-          "subnetAddress": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]"
+        "apimPublisherEmail": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The email address of the owner of the service"
+            }
         },
-        "vpnType": 1
-      }
+        "apimSku": {
+            "type": "string",
+            "allowedValues": [
+                "Developer",
+                "Premium"
+            ],
+            "defaultValue": "Developer",
+            "metadata": {
+                "description": "The pricing tier of this API Management service. Only Developer and Premium are supported when deploying into a shared VNET."
+            }
+        },
+        "serviceFabricCertificateName": {
+            "defaultValue": "service-fabric-certificate-name",
+            "type": "string"
+        },
+        "serviceFabricCertificate": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Base-64 encoded  PFX certificate to talk to Service Fabric Backend ."
+            }
+        },
+        "certificatePassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Certificate password to use to talk to Service Fabric Backend."
+            }
+        },
+        "serviceFabricCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Certificate Thumbprint to use to talk to Service Fabric Backend."
+            }
+        },
+        "clusterHttpManagementEndpoint": {
+            "type": "string",
+            "metadata": {
+                "description": "cluster HTTP management endpoint."
+            }
+        },
+        "policies_policy_name": {
+            "defaultValue": "policy",
+            "type": "string"
+        },
+        "inbound_policy":{
+            "defaultValue": "<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service backend-id=\"servicefabric\" sf-service-instance-name=\"fabric:/ApiApplication/WebApiService\" sf-resolve-condition=\"@((int)context.Response.StatusCode != 200)\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+            "type": "string"
+        },
+        "apis_service_fabric_app_name": {
+            "defaultValue": "service-fabric-app",
+            "type": "string"
+        },
+        "apim_service_fabric_product_name": {
+            "defaultValue": "service-fabric-api-product",
+            "type": "String"
+        },
+        "service_fabric_backend_name": {
+            "defaultValue": "servicefabric",
+            "type": "string"
+        },
+        "apis_service_fabric_app_name_operation": {
+            "defaultValue": "service-fabric-app-operation",
+            "type": "string"
+        },
+        "url_path": {
+            "defaultValue": "/api/values",
+            "type": "string"
+        },
+        "vnetName": {
+            "defaultValue": "sf-apim-vnet",
+            "type": "string",
+            "metadata": {
+                "description": "The name of the VNET that contains the Service Fabric cluster and API Management service deployment."
+            }
+        },
+        "subnetName": {
+            "defaultValue": "apim-subnet",
+            "type": "string",
+            "metadata": {
+                "description": "The name subnet to deploy the API Management service to. This subnet cannot have any other resources in it and must be in the same VNET that contains the Service Fabric cluster back-end."
+            }
+        },
+        "vnetVersion": {
+            "defaultValue": "2017-03-01",
+            "type": "string",
+            "metadata": {
+                "description": "The version of the VNET resource to which the subnet belongs as defined by the subnetName parameter."
+            }
+        },
+        "networkSecurityGroupName": {
+            "defaultValue": "apim-vnet-security",
+            "type": "string",
+            "metadata": {
+                "description": "The name Network Security Group to deploy the API Management service to. This NSG must be applied to the subnet in the 'subnetName' parameter."
+            }
+        },
+        "networkSecurityGroupVersion": {
+            "defaultValue": "2017-03-01",
+            "type": "string",
+            "metadata": {
+                "description": "The version of the Network Security Group resource."
+            }
+        }
     },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('networkSecurityGroupName')]",
-      "apiVersion": "[parameters('networkSecurityGroupVersion')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "securityRules": [
-          {
-            "name": "Client_communication_to_API_Management",
+    "variables": {
+        "location": "[string(resourceGroup().location)]",
+        "apimSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('apimSku')]",
+                "capacity": 1
+            },
+            "name": "[parameters('apimInstanceName')]",
+            "apiVersion": "2017-03-01",
+            "location": "[variables('location')]",
+            "tags": {},
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "80",
-              "sourceAddressPrefix": "Internet",
-              "destinationAddressPrefix": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
+                "publisherEmail": "[parameters('apimPublisherEmail')]",
+                "publisherName": "Microsoft",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[variables('apimSubnetId')]",
+                    "location": "[variables('location')]"
+                },
+                "customProperties": {
+                    "subnetAddress": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]"
+                },
+                "virtualNetworkType": "External"
             }
-          },
-          {
-            "name": "Secure_Client_communication_to_API_Management",
+        },
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.ApiManagement/service/certificates",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('serviceFabricCertificateName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+            ],
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "Internet",
-              "destinationAddressPrefix": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Inbound"
+                "data": "[parameters('serviceFabricCertificate')]",
+                "password": "[parameters('certificatePassword')]"
             }
-          },
-          {
-            "name": "Management_endpoint_for_Azure_portal_and_Powershell",
+        },
+        {
+            "apiVersion": "2017-03-01",
+            "type": "Microsoft.ApiManagement/service/backends",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('service_fabric_backend_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
+                "[resourceId('Microsoft.ApiManagement/service/certificates', parameters('apimInstanceName'), parameters('serviceFabricCertificateName'))]"
+            ],
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3443",
-              "sourceAddressPrefix": "Internet",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Inbound"
+                "description": "My Service Fabric backend",
+                "url": "fabric:/fake/service",
+                "protocol": "http",
+                "resourceId": "[parameters('clusterHttpManagementEndpoint')]",
+                "properties": {
+                    "serviceFabricCluster": {
+                        "managementEndpoints": [
+                            "[parameters('clusterHttpManagementEndpoint')]"
+                        ],
+                        "clientCertificateThumbprint": "[parameters('serviceFabricCertificateThumbprint')]",
+                        "serverCertificateThumbprints": [
+                            "[parameters('serviceFabricCertificateThumbprint')]"
+                        ],
+                        "maxPartitionResolutionRetries": 5
+                    }
+                }
             }
-          },
-          {
-            "name": "Dependency_on_Redis_Cache",
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('apim_service_fabric_product_name'))]",
+            "apiVersion": "2017-03-01",
+            "scale": null,
             "properties": {
-              "protocol": "UDP",
-              "sourcePortRange": "6381-6383",
-              "destinationPortRange": "6381-6383",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 130,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Azure_Storage_and_Azure_Service_Bus",
+                "displayName": "Service Fabric Apis",
+                "description": "Subscribers have access to Service Fabric Apis.",
+                "terms": null,
+                "subscriptionRequired": true,
+                "approvalRequired": false,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('apis_service_fabric_app_name'))]",
+            "apiVersion": "2017-03-01",
+            "scale": null,
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "80",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Azure_SQL",
+                "displayName": "Service Fabric App",
+                "apiRevision": "1",
+                "description": "",
+                "serviceUrl": "http://servicefabric",
+                "path": "myapp",
+                "protocols": [
+                    "http",
+                    "https"
+                ],
+                "authenticationSettings": null,
+                "subscriptionKeyParameterNames": null,
+                "isCurrent": true
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('apis_service_fabric_app_name'), '/', parameters('apis_service_fabric_app_name_operation'))]",
+            "apiVersion": "2017-03-01",
+            "scale": null,
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "1433",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Azure_SQL_V12",
+                "displayName": "Values",
+                "method": "GET",
+                "urlTemplate": "[parameters('url_path')]",
+                "description": "",
+                "policies": null
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimInstanceName'), parameters('apis_service_fabric_app_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/policies",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('apis_service_fabric_app_name'), '/', parameters('policies_policy_name'))]",
+            "apiVersion": "2017-03-01",
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "11000-11999",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Azure_SQL_V12_2",
+                "policyContent": "[parameters('inbound_policy')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimInstanceName'), parameters('apis_service_fabric_app_name'))]",
+                "[resourceId('Microsoft.ApiManagement/service/backends', parameters('apimInstanceName'), parameters('service_fabric_backend_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/apis",
+            "name": "[concat(parameters('apimInstanceName'), '/', parameters('apim_service_fabric_product_name'), '/', parameters('apis_service_fabric_app_name'))]",
+            "apiVersion": "2017-03-01",
+            "scale": null,
+            "properties": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apimInstanceName'))]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimInstanceName'), parameters('apis_service_fabric_app_name'))]",
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimInstanceName'), parameters('apim_service_fabric_product_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('networkSecurityGroupName')]",
+            "apiVersion": "[parameters('networkSecurityGroupVersion')]",
+            "location": "[variables('location')]",
             "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "14000-14999",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 130,
-              "direction": "Outbound"
+                "securityRules": [
+                    {
+                        "name": "Client_communication_to_API_Management",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Secure_Client_communication_to_API_Management",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "[reference(variables('apimSubnetId'), parameters('vnetVersion')).addressPrefix]",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Management_endpoint_for_Azure_portal_and_Powershell",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3443",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Redis_Cache",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "6381-6383",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Azure_Storage_and_Azure_Service_Bus",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Azure_SQL",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1433",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Azure_SQL_V12",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "11000-11999",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Azure_SQL_V12_2",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "14000-14999",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Service_Bus",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9350-9354",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_for_Log_to_event_Hub_policy",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "5671",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 150,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Redis_Cache_outbound",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "6381-6383",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 160,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Dependency_on_Azure_File_Share_for_GIT",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "445",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 170,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Azure_Infrastructure_Load_Balancer",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "AzureLoadBalancer",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
             }
-          },
-          {
-            "name": "Dependency_on_Service_Bus",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "9350-9354",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 140,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_for_Log_to_event_Hub_policy",
-            "properties": {
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "5671",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 150,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Redis_Cache_outbound",
-            "properties": {
-              "protocol": "UDP",
-              "sourcePortRange": "6381-6383",
-              "destinationPortRange": "6381-6383",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 160,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Dependency_on_Azure_File_Share_for_GIT",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "445",
-              "sourceAddressPrefix": "VirtualNetwork",
-              "destinationAddressPrefix": "Internet",
-              "access": "Allow",
-              "priority": 170,
-              "direction": "Outbound"
-            }
-          },
-          {
-            "name": "Azure_Infrastructure_Load_Balancer",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "AzureLoadBalancer",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 140,
-              "direction": "Inbound"
-            }
-          }
-        ]
-      }
-    }
-  ]
+        }
+    ]
 }
