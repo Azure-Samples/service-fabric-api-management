@@ -432,6 +432,19 @@
                         }
                     },
                     {
+                        "name": "Dependency_on_SMTP_Port_For_Sending_Emails",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "25028",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 180,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
                         "name": "Azure_Infrastructure_Load_Balancer",
                         "properties": {
                             "protocol": "TCP",
@@ -440,7 +453,7 @@
                             "sourceAddressPrefix": "AzureLoadBalancer",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
-                            "priority": 140,
+                            "priority": 190,
                             "direction": "Inbound"
                         }
                     }
