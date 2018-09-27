@@ -59,7 +59,7 @@
             "type": "string"
         },
         "inbound_policy":{
-            "defaultValue": "<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service backend-id=\"servicefabric\" sf-service-instance-name=\"fabric:/ApiApplication/WebApiService\" sf-resolve-condition=\"@((int)context.Response.StatusCode != 200)\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+            "defaultValue": "<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service backend-id=\"servicefabric\" sf-service-instance-name=\"fabric:/ApiApplication/WebApiService\" sf-resolve-condition=\"@(context.LastError?.Reason == \"BackendConnectionFailure\")\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
             "type": "string"
         },
         "apis_service_fabric_app_name": {
