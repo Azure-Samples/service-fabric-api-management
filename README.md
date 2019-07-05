@@ -1,7 +1,8 @@
 ---
-services: service-fabric
-platforms: dotnet
-author: vturecek
+languages: []
+products:
+- azure
+topic: sample
 ---
 
 # Service Fabric + Azure API Management
