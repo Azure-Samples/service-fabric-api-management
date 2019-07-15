@@ -1,8 +1,10 @@
 ---
-languages: []
+languages:
+- json
 products:
 - azure
-topic: sample
+page_type: sample
+description: "Resource Manager templates to get started with Azure API Management and Service Fabric, together, in Azure."
 ---
 
 # Service Fabric + Azure API Management
