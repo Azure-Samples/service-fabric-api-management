@@ -15,6 +15,6 @@ Cloud applications typically need a front-end gateway to provide a single point 
 
 The Resource Manager templates in this repo deploy API Management and a Service Fabric cluster into a shared Virtual Network, allowing API Management to communicate directly with Service Fabric so it can perform service discovery, service partition resolution, and forward traffic directly to any backend service in Service Fabric. 
 
-# Contributing
+## Contributing
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
